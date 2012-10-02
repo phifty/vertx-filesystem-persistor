@@ -1,7 +1,8 @@
 package me.phifty.database.test;
 
 import me.phifty.database.Database;
-import me.phifty.database.DoneHandler;
+import me.phifty.database.DatabaseException;
+import me.phifty.database.Handler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,9 +18,10 @@ public class DatabaseTest {
   public void setUp() throws Exception {
     database = new Database("/tmp/test") {
       @Override
-      public void store(String id, byte[] data, DoneHandler handler) {
+      public void store(String id, byte[] data, Handler<Boolean> handler) { }
 
-      }
+      @Override
+      public void fetch(String id, Handler<byte[]> handler) throws DatabaseException { }
     };
   }
 

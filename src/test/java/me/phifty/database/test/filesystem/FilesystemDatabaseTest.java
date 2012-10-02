@@ -14,6 +14,7 @@ import org.junit.Test;
 public class FilesystemDatabaseTest {
 
   private FakeDoneHandler doneHandler = new FakeDoneHandler();
+  private FakeDataHandler dataHandler = new FakeDataHandler();
   private FakeFilesystem filesystem;
   private Database database;
 
@@ -31,10 +32,25 @@ public class FilesystemDatabaseTest {
   }
 
   @Test
-  public void testBasicStore() throws InterruptedException, DatabaseException {
+  public void testStore() throws DatabaseException {
     database.store("12345", testData(), doneHandler);
     Assert.assertEquals("/tmp/test/1/2/3/12345", filesystem.writtenFileName);
     Assert.assertArrayEquals(testData(), filesystem.writtenFileData);
+  }
+
+  @Test
+  public void testPathCreationBeforeStore() throws DatabaseException {
+    filesystem.exists = false;
+    database.store("12345", testData(), doneHandler);
+    Assert.assertEquals("/tmp/test/1/2/3", filesystem.createdPath);
+  }
+
+  @Test
+  public void testFetch() throws DatabaseException {
+    filesystem.writtenFileName = "/tmp/test/1/2/3/12345";
+    filesystem.writtenFileData = testData();
+    database.fetch("12345", dataHandler);
+    Assert.assertArrayEquals(testData(), dataHandler.getData());
   }
 
   private byte[] testData() {

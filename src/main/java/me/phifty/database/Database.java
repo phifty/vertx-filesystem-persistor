@@ -1,7 +1,5 @@
 package me.phifty.database;
 
-import java.util.Map;
-
 /**
  * @author phifty <b.phifty@gmail.com>
  */
@@ -17,6 +15,8 @@ public abstract class Database {
     return path;
   }
 
-  public abstract void store(String id, byte[] data, DoneHandler handler) throws DatabaseException;
+  public abstract void store(String id, byte[] data, Handler<Boolean> handler) throws DatabaseException;
+
+  public abstract void fetch(String id, Handler<byte[]> handler) throws DatabaseException;
 
 }

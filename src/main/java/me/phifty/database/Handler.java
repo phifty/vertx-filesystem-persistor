@@ -5,7 +5,7 @@ package me.phifty.database;
  */
 public interface Handler<T> {
 
-  public void handler(T value);
+  public void handle(T value);
 
   public void exception(Exception exception);
 

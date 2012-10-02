@@ -1,9 +1,8 @@
 package me.phifty.database.filesystem;
 
 import me.phifty.database.Database;
-import me.phifty.database.DoneHandler;
-
-import java.io.File;
+import me.phifty.database.DatabaseException;
+import me.phifty.database.Handler;
 
 /**
  * @author phifty <b.phifty@gmail.com>
@@ -11,7 +10,7 @@ import java.io.File;
 public class FilesystemDatabase extends Database {
 
   private Filesystem filesystem;
-  private int[] pathSegmentLengths;
+  private PathBuilder pathBuilder;
 
   public FilesystemDatabase(String path) {
     this(path, new PhysicalFilesystem());
@@ -20,62 +19,44 @@ public class FilesystemDatabase extends Database {
   public FilesystemDatabase(String path, Filesystem filesystem) {
     super(path);
     this.filesystem = filesystem;
-    this.pathSegmentLengths = new int[] { 1, 1, 1 };
-  }
-
-  public void setPathSegmentLengths(int[] value) {
-    pathSegmentLengths = value;
-  }
-
-  public int[] getPathSegmentLengths() {
-    return pathSegmentLengths;
+    this.pathBuilder = new PathBuilder(path);
   }
 
   @Override
-  public void store(String id, byte[] data, final DoneHandler handler) throws IdTooShortException {
-    filesystem.writeFile(path(id), data, new DoneHandler() {
+  public void store(String id, final byte[] data, final Handler<Boolean> handler) throws DatabaseException {
+    final String path = pathBuilder.path(id);
+    final String filename = pathBuilder.filename(id);
+
+    filesystem.exists(path, new Handler<Boolean>() {
       @Override
-      public void done() {
-        handler.done();
+      public void handle(Boolean value) {
+        if (value) {
+          filesystem.writeFile(filename, data, handler);
+        } else {
+          filesystem.makePath(path, new Handler<Boolean>() {
+            @Override
+            public void handle(Boolean value) {
+              filesystem.writeFile(filename, data, handler);
+            }
+
+            @Override
+            public void exception(Exception exception) {
+              handler.exception(exception);
+            }
+          });
+        }
+      }
+
+      @Override
+      public void exception(Exception exception) {
+        handler.exception(exception);
       }
     });
   }
 
-  private String path(String id) throws IdTooShortException {
-    String result = getPath() + File.separator;
-    String[] pathSegments = pathSegments(id);
-
-    for (String pathSegment : pathSegments) {
-      result += pathSegment + File.separator;
-    }
-    result += id;
-
-    return result;
-  }
-
-  private String[] pathSegments(String id) throws IdTooShortException {
-    if (id.length() < (totalPathSegmentLength() + 1)) {
-      throw new IdTooShortException("id " + id + " is too short for path segmentation");
-    }
-
-    String[] result = new String[pathSegmentLengths.length];
-
-    int position = 0;
-    for (int index = 0; index < pathSegmentLengths.length; index++) {
-      int pathSegmentLength = pathSegmentLengths[index];
-      result[index] = id.substring(position, position + pathSegmentLength);
-      position += pathSegmentLength;
-    }
-
-    return result;
-  }
-
-  private int totalPathSegmentLength() {
-    int result = 0;
-    for (int pathSegmentLength : pathSegmentLengths) {
-      result += pathSegmentLength;
-    }
-    return result;
+  @Override
+  public void fetch(String id, Handler<byte[]> handler) throws DatabaseException {
+    filesystem.readFile(pathBuilder.filename(id), handler);
   }
 
 }

@@ -1,7 +1,10 @@
 package org.vertx.java.busmods.test;
 
 import org.vertx.java.busmods.FilesystemPersistorModule;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.framework.TestClientBase;
@@ -31,16 +34,21 @@ public class FilesystemPersistorTestClient extends TestClientBase {
     vertx.eventBus().send("test.filesystem-persistor.store", generateTestStoreMessage(), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
-        try {
-          tu.azzert(message.body.getBoolean("done"), "should add the test data");
-        } finally {
-          clearAllDocuments(new Handler<Boolean>() {
-            @Override
-            public void handle(Boolean done) {
-              tu.testComplete();
+        vertx.fileSystem().readFile("/tmp/db/1/2/3/12345", new AsyncResultHandler<Buffer>() {
+          @Override
+          public void handle(AsyncResult<Buffer> event) {
+            try {
+              tu.azzert("test".equals(event.result.toString()), "should create the right file");
+            } finally {
+              clearAllDocuments(new Handler<Boolean>() {
+                @Override
+                public void handle(Boolean done) {
+                  tu.testComplete();
+                }
+              });
             }
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -60,11 +68,8 @@ public class FilesystemPersistorTestClient extends TestClientBase {
 
   private JsonObject generateTestStoreMessage() {
     JsonObject message = new JsonObject();
-
-    JsonObject data = new JsonObject();
-    data.putString("test", "value");
-    message.putObject("12345", data);
-
+    message.putString("id", "12345");
+    message.putString("content", "test");
     return message;
   }
 

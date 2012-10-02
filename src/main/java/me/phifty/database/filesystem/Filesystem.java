@@ -1,22 +1,18 @@
 package me.phifty.database.filesystem;
 
-import me.phifty.database.DoneHandler;
-
-import java.io.File;
+import me.phifty.database.Handler;
 
 /**
  * @author phifty <b.phifty@gmail.com>
  */
-public abstract class Filesystem {
+public interface Filesystem {
 
-  public abstract boolean exists(String path);
+  public void exists(String path, Handler<Boolean> handler);
 
-  public void makePath(String path, DoneHandler handler) {
-    makePath(path.split(File.separator), handler);
-  }
+  public void makePath(String path, Handler<Boolean> handler);
 
-  public abstract void makePath(String[] path, DoneHandler handler);
+  public void writeFile(String name, byte[] data, Handler<Boolean> handler);
 
-  public abstract void writeFile(String name, byte[] data, DoneHandler handler);
+  public void readFile(String name, Handler<byte[]> handler);
 
 }
