@@ -1,6 +1,5 @@
 package org.vertx.java.busmods.test;
 
-import org.junit.Test;
 import org.vertx.java.framework.TestBase;
 
 public class FilesystemPersistorModuleTest extends TestBase {
@@ -11,12 +10,6 @@ public class FilesystemPersistorModuleTest extends TestBase {
     startApp(FilesystemPersistorTestClient.class.getName());
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
-  @Test
   public void testStore() {
     startTest(getMethodName());
   }
