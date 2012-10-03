@@ -18,6 +18,11 @@ public class PhysicalFilesystem implements Filesystem {
   }
 
   @Override
+  public void deletePath(String path, Handler<Boolean> handler) {
+    System.out.println("deletePath");
+  }
+
+  @Override
   public void writeFile(String name, byte[] data, Handler<Boolean> handler) {
     System.out.println("writeFile");
   }

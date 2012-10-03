@@ -7,7 +7,7 @@ import me.phifty.database.Handler;
 /**
  * @author phifty <b.phifty@gmail.com>
  */
-public class FilesystemDatabase extends Database {
+public class FilesystemDatabase implements Database {
 
   private Filesystem filesystem;
   private PathBuilder pathBuilder;
@@ -17,7 +17,6 @@ public class FilesystemDatabase extends Database {
   }
 
   public FilesystemDatabase(String path, Filesystem filesystem) {
-    super(path);
     this.filesystem = filesystem;
     this.pathBuilder = new PathBuilder(path);
   }
@@ -66,6 +65,21 @@ public class FilesystemDatabase extends Database {
         } else {
           handler.handle(null);
         }
+      }
+
+      @Override
+      public void exception(Exception exception) {
+        handler.exception(exception);
+      }
+    });
+  }
+
+  @Override
+  public void clear(final Handler<Boolean> handler) {
+    filesystem.deletePath(pathBuilder.getBasePath(), new Handler<Boolean>() {
+      @Override
+      public void handle(Boolean value) {
+        handler.handle(value);
       }
 
       @Override

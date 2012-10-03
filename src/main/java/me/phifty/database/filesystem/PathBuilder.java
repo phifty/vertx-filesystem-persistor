@@ -19,6 +19,10 @@ public class PathBuilder {
     this.pathSegmentLengths = pathSegmentLengths;
   }
 
+  public String getBasePath() {
+    return basePath;
+  }
+
   public String filename(String id) throws IdTooShortException {
     return path(id) + File.separator + id;
   }

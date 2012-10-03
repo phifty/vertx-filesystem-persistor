@@ -22,4 +22,8 @@ public class FilesystemPersistorModuleTest extends TestBase {
     startTest(getMethodName());
   }
 
+  public void testClear() {
+    startTest(getMethodName());
+  }
+
 }

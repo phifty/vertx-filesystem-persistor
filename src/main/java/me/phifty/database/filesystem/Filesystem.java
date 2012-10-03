@@ -11,6 +11,8 @@ public interface Filesystem {
 
   public void makePath(String path, Handler<Boolean> handler);
 
+  public void deletePath(String path, Handler<Boolean> handler);
+
   public void writeFile(String name, byte[] data, Handler<Boolean> handler);
 
   public void readFile(String name, Handler<byte[]> handler);

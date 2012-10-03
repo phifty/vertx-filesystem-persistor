@@ -10,6 +10,7 @@ public class FakeFilesystem implements Filesystem {
 
   protected boolean exists;
   protected String createdPath;
+  protected String deletedPath;
   protected String writtenFileName;
   protected byte[] writtenFileData;
 
@@ -21,6 +22,12 @@ public class FakeFilesystem implements Filesystem {
   @Override
   public void makePath(String path, Handler<Boolean> handler) {
     createdPath = path;
+    handler.handle(true);
+  }
+
+  @Override
+  public void deletePath(String path, Handler<Boolean> handler) {
+    deletedPath = path;
     handler.handle(true);
   }
 

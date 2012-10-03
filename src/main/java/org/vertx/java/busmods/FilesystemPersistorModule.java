@@ -47,7 +47,7 @@ public class FilesystemPersistorModule extends Verticle {
           database.store(id, content.getBytes(), new me.phifty.database.Handler<Boolean>() {
             @Override
             public void handle(Boolean value) {
-              message.reply(doneMessage());
+              message.reply(doneMessage(true));
             }
 
             @Override
@@ -91,9 +91,19 @@ public class FilesystemPersistorModule extends Verticle {
   private void registerClearHandler() {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".clear", new Handler<Message<JsonObject>>() {
       @Override
-      public void handle(Message<JsonObject> message) {
+      public void handle(final Message<JsonObject> message) {
         try {
-          message.reply(doneMessage());
+          database.clear(new me.phifty.database.Handler<Boolean>() {
+            @Override
+            public void handle(Boolean value) {
+              message.reply(doneMessage(true));
+            }
+
+            @Override
+            public void exception(Exception exception) {
+              message.reply(failMessage(exception));
+            }
+          });
         } catch (Exception exception) {
           message.reply(failMessage(exception));
         }
@@ -101,9 +111,9 @@ public class FilesystemPersistorModule extends Verticle {
     });
   }
 
-  private JsonObject doneMessage() {
+  private JsonObject doneMessage(Boolean done) {
     JsonObject message = new JsonObject();
-    message.putBoolean("done", true);
+    message.putBoolean("done", done);
     return message;
   }
 

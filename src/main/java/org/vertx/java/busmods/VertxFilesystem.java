@@ -47,6 +47,20 @@ public class VertxFilesystem implements Filesystem {
   }
 
   @Override
+  public void deletePath(String path, final Handler<Boolean> handler) {
+    vertx.fileSystem().delete(path, true, new AsyncResultHandler<Void>() {
+      @Override
+      public void handle(AsyncResult<Void> event) {
+        if (event.exception == null) {
+          handler.handle(true);
+        } else {
+          handler.exception(event.exception);
+        }
+      }
+    });
+  }
+
+  @Override
   public void writeFile(String name, byte[] data, final Handler<Boolean> handler) {
     vertx.fileSystem().writeFile(name, new Buffer(data), new AsyncResultHandler<Void>() {
       @Override

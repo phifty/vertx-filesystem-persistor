@@ -31,7 +31,7 @@ public class FilesystemPersistorTestClient extends TestClientBase {
   }
 
   public void testStore() {
-    vertx.eventBus().send("test.filesystem-persistor.store", generateTestStoreMessage("12345", "test"), new Handler<Message<JsonObject>>() {
+    vertx.eventBus().send("test.filesystem-persistor.store", generateStoreMessage("12345", "test"), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         checkForException(message);
@@ -41,7 +41,7 @@ public class FilesystemPersistorTestClient extends TestClientBase {
             try {
               tu.azzert("test".equals(event.result.toString()), "should create the right file");
             } finally {
-              clearAllDocuments(new Handler<Boolean>() {
+              clearAllData(new Handler<Boolean>() {
                 @Override
                 public void handle(Boolean done) {
                   tu.testComplete();
@@ -58,14 +58,14 @@ public class FilesystemPersistorTestClient extends TestClientBase {
     addTestData(new Handler<Boolean>() {
       @Override
       public void handle(Boolean event) {
-        vertx.eventBus().send("test.filesystem-persistor.fetch", generateTestFetchMessage("12345"), new Handler<Message<JsonObject>>() {
+        vertx.eventBus().send("test.filesystem-persistor.fetch", generateFetchMessage("12345"), new Handler<Message<JsonObject>>() {
           @Override
           public void handle(Message<JsonObject> message) {
             try {
               checkForException(message);
               tu.azzert("test".equals(message.body.getString("content")), "should respond the right content");
             } finally {
-              clearAllDocuments(new Handler<Boolean>() {
+              clearAllData(new Handler<Boolean>() {
                 @Override
                 public void handle(Boolean done) {
                   tu.testComplete();
@@ -79,20 +79,44 @@ public class FilesystemPersistorTestClient extends TestClientBase {
   }
 
   public void testFetchOfMissing() {
-    vertx.eventBus().send("test.filesystem-persistor.fetch", generateTestFetchMessage("missing"), new Handler<Message<JsonObject>>() {
+    vertx.eventBus().send("test.filesystem-persistor.fetch", generateFetchMessage("missing"), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         try {
           checkForException(message);
           tu.azzert(message.body.getString("content") == null, "should respond no content");
         } finally {
-          clearAllDocuments(new Handler<Boolean>() {
+          clearAllData(new Handler<Boolean>() {
             @Override
             public void handle(Boolean done) {
               tu.testComplete();
             }
           });
         }
+      }
+    });
+  }
+
+  public void testClear() {
+    addTestData(new Handler<Boolean>() {
+      @Override
+      public void handle(Boolean value) {
+        vertx.eventBus().send("test.filesystem-persistor.clear", null, new Handler<Message<JsonObject>>() {
+          @Override
+          public void handle(Message<JsonObject> message) {
+            checkForException(message);
+            fetchTestData(new Handler<String>() {
+              @Override
+              public void handle(String content) {
+                try {
+                  tu.azzert(content == null, "should clear all data");
+                } finally {
+                  tu.testComplete();
+                }
+              }
+            });
+          }
+        });
       }
     });
   }
@@ -104,14 +128,23 @@ public class FilesystemPersistorTestClient extends TestClientBase {
   }
 
   private void addTestData(Handler<Boolean> handler) {
-    sendAndReceiveDoneMessage("test.filesystem-persistor.store", generateTestStoreMessage("12345", "test"), handler);
+    sendAndReceiveDoneMessage("test.filesystem-persistor.store", generateStoreMessage("12345", "test"), handler);
   }
 
-  private void clearAllDocuments(Handler<Boolean> handler) {
+  private void fetchTestData(final Handler<String> handler) {
+    vertx.eventBus().send("test.filesystem-persistor.fetch", generateFetchMessage("12345"), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        handler.handle(message.body.getString("content"));
+      }
+    });
+  }
+
+  private void clearAllData(Handler<Boolean> handler) {
     sendAndReceiveDoneMessage("test.filesystem-persistor.clear", null, handler);
   }
 
-  private void sendAndReceiveDoneMessage(final String address, final JsonObject message, final Handler<Boolean> handler) {
+  private void sendAndReceiveDoneMessage(String address, JsonObject message, final Handler<Boolean> handler) {
     vertx.eventBus().send(address, message, new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -120,14 +153,14 @@ public class FilesystemPersistorTestClient extends TestClientBase {
     });
   }
 
-  private JsonObject generateTestStoreMessage(String id, String content) {
+  private JsonObject generateStoreMessage(String id, String content) {
     JsonObject message = new JsonObject();
     message.putString("id", id);
     message.putString("content", content);
     return message;
   }
 
-  private JsonObject generateTestFetchMessage(String id) {
+  private JsonObject generateFetchMessage(String id) {
     JsonObject message = new JsonObject();
     message.putString("id", id);
     return message;

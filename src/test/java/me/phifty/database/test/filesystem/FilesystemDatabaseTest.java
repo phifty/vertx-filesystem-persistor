@@ -62,6 +62,12 @@ public class FilesystemDatabaseTest {
     Assert.assertNull(dataHandler.getData());
   }
 
+  @Test
+  public void testClear() {
+    database.clear(doneHandler);
+    Assert.assertEquals("/tmp/test", filesystem.deletedPath);
+  }
+
   private byte[] testData() {
     return "test".getBytes();
   }
