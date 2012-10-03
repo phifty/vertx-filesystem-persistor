@@ -61,8 +61,17 @@ public class VertxFilesystem implements Filesystem {
   }
 
   @Override
-  public void readFile(String name, Handler<byte[]> handler) {
-
+  public void readFile(String name, final Handler<byte[]> handler) {
+    vertx.fileSystem().readFile(name, new AsyncResultHandler<Buffer>() {
+      @Override
+      public void handle(AsyncResult<Buffer> event) {
+        if (event.exception == null) {
+          handler.handle(event.result.getBytes());
+        } else {
+          handler.exception(event.exception);
+        }
+      }
+    });
   }
 
 }

@@ -53,6 +53,15 @@ public class FilesystemDatabaseTest {
     Assert.assertArrayEquals(testData(), dataHandler.getData());
   }
 
+  @Test
+  public void testFetchOfMissing() throws DatabaseException {
+    filesystem.writtenFileName = "/tmp/test/1/2/3/12345";
+    filesystem.writtenFileData = testData();
+    filesystem.exists = false;
+    database.fetch("12345", dataHandler);
+    Assert.assertNull(dataHandler.getData());
+  }
+
   private byte[] testData() {
     return "test".getBytes();
   }

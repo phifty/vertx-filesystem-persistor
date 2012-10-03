@@ -1,7 +1,6 @@
 package org.vertx.java.busmods;
 
 import me.phifty.database.Database;
-import me.phifty.database.DatabaseException;
 import me.phifty.database.filesystem.FilesystemDatabase;
 import org.vertx.java.busmods.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
@@ -19,6 +18,7 @@ public class FilesystemPersistorModule extends Verticle {
     initializeConfiguration();
     initializeDatabase();
     registerStoreHandler();
+    registerFetchHandler();
     registerClearHandler();
   }
 
@@ -52,13 +52,37 @@ public class FilesystemPersistorModule extends Verticle {
 
             @Override
             public void exception(Exception exception) {
-              exception.printStackTrace();
-              message.reply(failMessage());
+              message.reply(failMessage(exception));
             }
           });
-        } catch (DatabaseException exception) {
-          exception.printStackTrace();
-          message.reply(failMessage());
+        } catch (Exception exception) {
+          message.reply(failMessage(exception));
+        }
+      }
+    });
+  }
+
+  private void registerFetchHandler() {
+    final Database database = this.database;
+    vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".fetch", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(final Message<JsonObject> message) {
+        String id = message.body.getString("id");
+
+        try {
+          database.fetch(id, new me.phifty.database.Handler<byte[]>() {
+            @Override
+            public void handle(byte[] value) {
+              message.reply(contentMessage(value == null ? null : new String(value)));
+            }
+
+            @Override
+            public void exception(Exception exception) {
+              message.reply(failMessage(exception));
+            }
+          });
+        } catch (Exception exception) {
+          message.reply(failMessage(exception));
         }
       }
     });
@@ -71,8 +95,7 @@ public class FilesystemPersistorModule extends Verticle {
         try {
           message.reply(doneMessage());
         } catch (Exception exception) {
-          exception.printStackTrace();
-          message.reply(failMessage());
+          message.reply(failMessage(exception));
         }
       }
     });
@@ -84,9 +107,17 @@ public class FilesystemPersistorModule extends Verticle {
     return message;
   }
 
-  private JsonObject failMessage() {
+  private JsonObject contentMessage(String content) {
     JsonObject message = new JsonObject();
-    message.putBoolean("done", false);
+    if (content != null) {
+      message.putString("content", content);
+    }
+    return message;
+  }
+
+  private JsonObject failMessage(Exception exception) {
+    JsonObject message = new JsonObject();
+    message.putString("exception", exception.toString());
     return message;
   }
 

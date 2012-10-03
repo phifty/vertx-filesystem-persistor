@@ -55,8 +55,24 @@ public class FilesystemDatabase extends Database {
   }
 
   @Override
-  public void fetch(String id, Handler<byte[]> handler) throws DatabaseException {
-    filesystem.readFile(pathBuilder.filename(id), handler);
+  public void fetch(String id, final Handler<byte[]> handler) throws DatabaseException {
+    final String filename = pathBuilder.filename(id);
+
+    filesystem.exists(filename, new Handler<Boolean>() {
+      @Override
+      public void handle(Boolean value) {
+        if (value) {
+          filesystem.readFile(filename, handler);
+        } else {
+          handler.handle(null);
+        }
+      }
+
+      @Override
+      public void exception(Exception exception) {
+        handler.exception(exception);
+      }
+    });
   }
 
 }

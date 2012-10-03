@@ -14,4 +14,12 @@ public class FilesystemPersistorModuleTest extends TestBase {
     startTest(getMethodName());
   }
 
+  public void testFetch() {
+    startTest(getMethodName());
+  }
+
+  public void testFetchOfMissing() {
+    startTest(getMethodName());
+  }
+
 }
