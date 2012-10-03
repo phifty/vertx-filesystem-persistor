@@ -28,6 +28,7 @@ public class FilesystemDatabaseTest {
 
   @After
   public void tearDown() {
+    filesystem.reset();
     doneHandler.reset();
   }
 
@@ -63,9 +64,25 @@ public class FilesystemDatabaseTest {
   }
 
   @Test
+  public void testRemove() throws DatabaseException {
+    database.remove("12345", doneHandler);
+    Assert.assertEquals(true, filesystem.deletedPaths.contains("/tmp/test/1/2/3/12345"));
+  }
+
+  @Test
+  public void testRemoveOfEmptyDirectories() throws DatabaseException {
+    filesystem.emptyPaths.add("/tmp/test/1/2/3");
+    filesystem.emptyPaths.add("/tmp/test/1/2");
+    database.remove("12345", doneHandler);
+    Assert.assertEquals(true, filesystem.deletedPaths.contains("/tmp/test/1/2/3"));
+    Assert.assertEquals(true, filesystem.deletedPaths.contains("/tmp/test/1/2"));
+    Assert.assertEquals(false, filesystem.deletedPaths.contains("/tmp/test/1"));
+  }
+
+  @Test
   public void testClear() {
     database.clear(doneHandler);
-    Assert.assertEquals("/tmp/test", filesystem.deletedPath);
+    Assert.assertEquals(true, filesystem.deletedPaths.contains("/tmp/test"));
   }
 
   private byte[] testData() {

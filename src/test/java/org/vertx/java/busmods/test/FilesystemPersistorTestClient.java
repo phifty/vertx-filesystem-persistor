@@ -97,6 +97,29 @@ public class FilesystemPersistorTestClient extends TestClientBase {
     });
   }
 
+  public void testRemove() {
+    addTestData(new Handler<Boolean>() {
+      @Override
+      public void handle(Boolean event) {
+        vertx.eventBus().send("test.filesystem-persistor.remove", generateRemoveMessage("12345"), new Handler<Message<JsonObject>>() {
+          @Override
+          public void handle(Message<JsonObject> message) {
+            fetchTestData(new Handler<String>() {
+              @Override
+              public void handle(String content) {
+                try {
+                  tu.azzert(content == null, "should remove the content");
+                } finally {
+                  tu.testComplete();
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
   public void testClear() {
     addTestData(new Handler<Boolean>() {
       @Override
@@ -161,6 +184,12 @@ public class FilesystemPersistorTestClient extends TestClientBase {
   }
 
   private JsonObject generateFetchMessage(String id) {
+    JsonObject message = new JsonObject();
+    message.putString("id", id);
+    return message;
+  }
+
+  private JsonObject generateRemoveMessage(String id) {
     JsonObject message = new JsonObject();
     message.putString("id", id);
     return message;

@@ -9,6 +9,8 @@ public interface Filesystem {
 
   public void exists(String path, Handler<Boolean> handler);
 
+  public void empty(String path, Handler<Boolean> handler);
+
   public void makePath(String path, Handler<Boolean> handler);
 
   public void deletePath(String path, Handler<Boolean> handler);

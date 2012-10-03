@@ -19,6 +19,7 @@ public class FilesystemPersistorModule extends Verticle {
     initializeDatabase();
     registerStoreHandler();
     registerFetchHandler();
+    registerRemoveHandler();
     registerClearHandler();
   }
 
@@ -74,6 +75,31 @@ public class FilesystemPersistorModule extends Verticle {
             @Override
             public void handle(byte[] value) {
               message.reply(contentMessage(value == null ? null : new String(value)));
+            }
+
+            @Override
+            public void exception(Exception exception) {
+              message.reply(failMessage(exception));
+            }
+          });
+        } catch (Exception exception) {
+          message.reply(failMessage(exception));
+        }
+      }
+    });
+  }
+
+  private void registerRemoveHandler() {
+    vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".remove", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(final Message<JsonObject> message) {
+        String id = message.body.getString("id");
+
+        try {
+          database.remove(id, new me.phifty.database.Handler<Boolean>() {
+            @Override
+            public void handle(Boolean value) {
+              message.reply(doneMessage(true));
             }
 
             @Override

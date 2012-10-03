@@ -33,6 +33,20 @@ public class VertxFilesystem implements Filesystem {
   }
 
   @Override
+  public void empty(String path, final Handler<Boolean> handler) {
+    vertx.fileSystem().readDir(path, new AsyncResultHandler<String[]>() {
+      @Override
+      public void handle(AsyncResult<String[]> event) {
+        if (event.exception == null) {
+          handler.handle(event.result.length == 0);
+        } else {
+          handler.exception(event.exception);
+        }
+      }
+    });
+  }
+
+  @Override
   public void makePath(String path, final Handler<Boolean> handler) {
     vertx.fileSystem().mkdir(path, true, new AsyncResultHandler<Void>() {
       @Override

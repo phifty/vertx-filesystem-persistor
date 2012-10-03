@@ -3,20 +3,28 @@ package me.phifty.database.test.filesystem;
 import me.phifty.database.Handler;
 import me.phifty.database.filesystem.Filesystem;
 
+import java.util.ArrayList;
+
 /**
  * @author phifty <b.phifty@gmail.com>
  */
 public class FakeFilesystem implements Filesystem {
 
   protected boolean exists;
+  protected ArrayList<String> emptyPaths = new ArrayList<String>();
   protected String createdPath;
-  protected String deletedPath;
+  protected ArrayList<String> deletedPaths = new ArrayList<String>();
   protected String writtenFileName;
   protected byte[] writtenFileData;
 
   @Override
   public void exists(String path, Handler<Boolean> handler) {
     handler.handle(exists);
+  }
+
+  @Override
+  public void empty(String path, Handler<Boolean> handler) {
+    handler.handle(emptyPaths.contains(path));
   }
 
   @Override
@@ -27,7 +35,7 @@ public class FakeFilesystem implements Filesystem {
 
   @Override
   public void deletePath(String path, Handler<Boolean> handler) {
-    deletedPath = path;
+    deletedPaths.add(path);
     handler.handle(true);
   }
 
@@ -43,6 +51,15 @@ public class FakeFilesystem implements Filesystem {
     if (name.equals(writtenFileName)) {
       handler.handle(writtenFileData);
     }
+  }
+
+  public void reset() {
+    exists = false;
+    emptyPaths.clear();
+    createdPath = null;
+    deletedPaths.clear();
+    writtenFileName = null;
+    writtenFileData = null;
   }
 
 }

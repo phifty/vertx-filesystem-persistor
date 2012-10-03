@@ -13,6 +13,11 @@ public class PhysicalFilesystem implements Filesystem {
   }
 
   @Override
+  public void empty(String path, Handler<Boolean> handler) {
+    System.out.println("empty");
+  }
+
+  @Override
   public void makePath(String path, Handler<Boolean> handler) {
     System.out.println("makePath");
   }

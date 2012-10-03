@@ -5,10 +5,12 @@ package me.phifty.database;
  */
 public interface Database {
 
-  public abstract void store(String id, byte[] data, Handler<Boolean> handler) throws DatabaseException;
+  public void store(String id, byte[] data, Handler<Boolean> handler) throws DatabaseException;
 
-  public abstract void fetch(String id, Handler<byte[]> handler) throws DatabaseException;
+  public void fetch(String id, Handler<byte[]> handler) throws DatabaseException;
 
-  public abstract void clear(Handler<Boolean> handler);
+  public void remove(String id, Handler<Boolean> handler) throws DatabaseException;
+
+  public void clear(Handler<Boolean> handler);
 
 }
