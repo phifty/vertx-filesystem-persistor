@@ -2,7 +2,7 @@ package me.phifty.database.test.filesystem;
 
 import me.phifty.database.Handler;
 import me.phifty.database.filesystem.Filesystem;
-import me.phifty.database.filesystem.Properties;
+import me.phifty.database.filesystem.Statistics;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +14,7 @@ public class FakeFilesystem implements Filesystem {
 
   protected boolean exists;
   protected HashMap<String, String[]> listedFiles = new HashMap<String, String[]>();
+  protected Statistics statistics;
   protected ArrayList<String> createdPaths = new ArrayList<String>();
   protected ArrayList<String> deletedPaths = new ArrayList<String>();
   protected String writtenFileName;
@@ -34,8 +35,8 @@ public class FakeFilesystem implements Filesystem {
   }
 
   @Override
-  public void properties(String path, Handler<Properties> handler) {
-
+  public void statistics(String path, Handler<Statistics> handler) {
+    handler.handle(statistics);
   }
 
   @Override
@@ -67,6 +68,7 @@ public class FakeFilesystem implements Filesystem {
   public void reset() {
     exists = false;
     listedFiles.clear();
+    statistics = null;
     createdPaths.clear();
     deletedPaths.clear();
     writtenFileName = null;

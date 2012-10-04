@@ -102,6 +102,12 @@ public class FilesystemDatabase implements Database {
   }
 
   @Override
+  public void fetchStatistics(String id, Handler<Statistics> handler) throws DatabaseException {
+    final String fileName = pathBuilder.filename(id);
+    filesystem.statistics(fileName, handler);
+  }
+
+  @Override
   public void remove(String id, final Handler<Boolean> handler) throws DatabaseException {
     final String filename = pathBuilder.filename(id);
     final String path = pathBuilder.path(id);
@@ -142,35 +148,6 @@ public class FilesystemDatabase implements Database {
         handler.exception(exception);
       }
     });
-  }
-
-  private ArrayList<String> readIds(final String path, final Handler<String[]> handler) {
-    ArrayList<String> ids = new ArrayList<String>();
-
-    filesystem.listFiles(path, new Handler<String[]>() {
-      @Override
-      public void handle(String[] names) {
-        for (String name : names) {
-          filesystem.properties(path + File.separator + name, new Handler<Properties>() {
-            @Override
-            public void handle(Properties properties) {
-            }
-
-            @Override
-            public void exception(Exception exception) {
-              handler.exception(exception);
-            }
-          });
-        }
-      }
-
-      @Override
-      public void exception(Exception exception) {
-        handler.exception(exception);
-      }
-    });
-
-    return ids;
   }
 
   private void removeEmptyDirectories(final String path, final Handler<Boolean> handler) {

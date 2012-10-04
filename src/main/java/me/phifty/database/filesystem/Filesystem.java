@@ -11,7 +11,7 @@ public interface Filesystem {
 
   public void listFiles(String path, Handler<String[]> handler);
 
-  public void properties(String path, Handler<Properties> handler);
+  public void statistics(String path, Handler<Statistics> handler);
 
   public void makePath(String path, Handler<Boolean> handler);
 

@@ -2,6 +2,7 @@ package me.phifty.database.test.filesystem;
 
 import me.phifty.database.filesystem.Filesystem;
 import me.phifty.database.filesystem.PhysicalFilesystem;
+import me.phifty.database.filesystem.Statistics;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * @author phifty <b.phifty@gmail.com>
@@ -19,6 +21,7 @@ public class PhysicalFilesystemTest {
 
   private FakeHandler<Boolean> booleanHandler = new FakeHandler<Boolean>();
   private FakeHandler<String[]> listHandler = new FakeHandler<String[]>();
+  private FakeHandler<Statistics> statisticsHandler = new FakeHandler<Statistics>();
   private FakeHandler<byte[]> dataHandler = new FakeHandler<byte[]>();
 
   private Filesystem filesystem;
@@ -33,6 +36,7 @@ public class PhysicalFilesystemTest {
     clearTestData();
     booleanHandler.reset();
     listHandler.reset();
+    statisticsHandler.reset();
     dataHandler.reset();
   }
 
@@ -52,6 +56,18 @@ public class PhysicalFilesystemTest {
     filesystem.listFiles("/tmp/test", listHandler);
 
     Assert.assertArrayEquals(new String[] { "/tmp/test/1/2/3/12345" }, listHandler.getValue());
+  }
+
+  @Test
+  public void testStatistics() throws IOException {
+    Date now = new Date();
+    writeTestData();
+
+    filesystem.statistics("/tmp/test/1/2/3/12345", statisticsHandler);
+
+    Assert.assertEquals(true, statisticsHandler.getValue().accessTime.before(now));
+    Assert.assertEquals(true, statisticsHandler.getValue().updateTime.before(now));
+    Assert.assertEquals(true, statisticsHandler.getValue().creationTime.before(now));
   }
 
   @Test
@@ -109,7 +125,10 @@ public class PhysicalFilesystemTest {
   }
 
   private void clearTestData() throws IOException {
-    filesystem.deletePath("/tmp/test", booleanHandler);
+    filesystem.exists("/tmp/test", booleanHandler);
+    if (booleanHandler.getValue()) {
+      filesystem.deletePath("/tmp/test", booleanHandler);
+    }
   }
 
 }

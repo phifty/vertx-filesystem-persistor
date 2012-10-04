@@ -3,7 +3,11 @@ package me.phifty.database.filesystem;
 import me.phifty.database.Handler;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * @author phifty <b.phifty@gmail.com>
@@ -29,8 +33,15 @@ public class PhysicalFilesystem implements Filesystem {
   }
 
   @Override
-  public void properties(String path, Handler<Properties> handler) {
-    System.out.println("properties");
+  public void statistics(String path, Handler<Statistics> handler) {
+    try {
+      Date accessTime = fileTimeAttribute(path, "lastAccessTime");
+      Date updateTime = fileTimeAttribute(path, "lastModifiedTime");
+      Date creationTime = fileTimeAttribute(path, "creationTime");
+      handler.handle(new Statistics(accessTime, updateTime, creationTime));
+    } catch (Exception exception) {
+      handler.exception(exception);
+    }
   }
 
   @Override
@@ -99,6 +110,10 @@ public class PhysicalFilesystem implements Filesystem {
       }
     }
     return result;
+  }
+
+  private Date fileTimeAttribute(String path, String attributeName) throws IOException {
+    return new Date(((FileTime)Files.getAttribute(Paths.get(path), "lastAccessTime")).toMillis());
   }
 
   private void deleteRecursive(File file) throws FileNotFoundException {

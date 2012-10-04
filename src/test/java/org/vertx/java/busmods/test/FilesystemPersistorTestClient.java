@@ -98,6 +98,32 @@ public class FilesystemPersistorTestClient extends TestClientBase {
     });
   }
 
+  public void testFetchStatistics() {
+    addTestData(new Handler<Boolean>() {
+      @Override
+      public void handle(Boolean event) {
+        vertx.eventBus().send("test.filesystem-persistor.fetch-statistics", generateFetchMessage("12345"), new Handler<Message<JsonObject>>() {
+          @Override
+          public void handle(Message<JsonObject> message) {
+            try {
+              checkForException(message);
+              tu.azzert(message.body.getLong("accessed_at") > 0, "should respond the last access time");
+              tu.azzert(message.body.getLong("updated_at") > 0, "should respond the last update time");
+              tu.azzert(message.body.getLong("created_at") > 0, "should respond the creation time");
+            } finally {
+              clearAllData(new Handler<Boolean>() {
+                @Override
+                public void handle(Boolean done) {
+                  tu.testComplete();
+                }
+              });
+            }
+          }
+        });
+      }
+    });
+  }
+
   public void testRemove() {
     addTestData(new Handler<Boolean>() {
       @Override

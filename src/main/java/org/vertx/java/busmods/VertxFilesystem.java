@@ -2,7 +2,7 @@ package org.vertx.java.busmods;
 
 import me.phifty.database.Handler;
 import me.phifty.database.filesystem.Filesystem;
-import me.phifty.database.filesystem.Properties;
+import me.phifty.database.filesystem.Statistics;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Vertx;
@@ -76,8 +76,17 @@ public class VertxFilesystem implements Filesystem {
   }
 
   @Override
-  public void properties(String path, Handler<Properties> handler) {
-
+  public void statistics(String path, final Handler<Statistics> handler) {
+    vertx.fileSystem().props(path, new AsyncResultHandler<FileProps>() {
+      @Override
+      public void handle(AsyncResult<FileProps> event) {
+        if (event.exception == null) {
+          handler.handle(new Statistics(event.result.lastAccessTime, event.result.lastModifiedTime, event.result.creationTime));
+        } else {
+          handler.exception(event.exception);
+        }
+      }
+    });
   }
 
   @Override

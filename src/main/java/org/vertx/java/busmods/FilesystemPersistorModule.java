@@ -2,6 +2,7 @@ package org.vertx.java.busmods;
 
 import me.phifty.database.Database;
 import me.phifty.database.filesystem.FilesystemDatabase;
+import me.phifty.database.filesystem.Statistics;
 import org.vertx.java.busmods.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -20,6 +21,7 @@ public class FilesystemPersistorModule extends Verticle {
     initializeDatabase();
     registerStoreHandler();
     registerFetchHandler();
+    registerFetchStatisticsHandler();
     registerRemoveHandler();
     registerClearHandler();
   }
@@ -90,6 +92,32 @@ public class FilesystemPersistorModule extends Verticle {
     });
   }
 
+  private void registerFetchStatisticsHandler() {
+    final Database database = this.database;
+    vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".fetch-statistics", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(final Message<JsonObject> message) {
+        String id = message.body.getString("id");
+
+        try {
+          database.fetchStatistics(id, new me.phifty.database.Handler<Statistics>() {
+            @Override
+            public void handle(Statistics statistics) {
+              message.reply(statisticsMessage(statistics));
+            }
+
+            @Override
+            public void exception(Exception exception) {
+              message.reply(failMessage(exception));
+            }
+          });
+        } catch (Exception exception) {
+          message.reply(failMessage(exception));
+        }
+      }
+    });
+  }
+
   private void registerRemoveHandler() {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".remove", new Handler<Message<JsonObject>>() {
       @Override
@@ -138,16 +166,6 @@ public class FilesystemPersistorModule extends Verticle {
     });
   }
 
-  private JsonObject idsMessage(String[] ids) {
-    JsonObject message = new JsonObject();
-    JsonArray idsMessage = new JsonArray();
-    for (String id : ids) {
-      idsMessage.addString(id);
-    }
-    message.putArray("ids", idsMessage);
-    return message;
-  }
-
   private JsonObject doneMessage(Boolean done) {
     JsonObject message = new JsonObject();
     message.putBoolean("done", done);
@@ -158,6 +176,16 @@ public class FilesystemPersistorModule extends Verticle {
     JsonObject message = new JsonObject();
     if (content != null) {
       message.putString("content", content);
+    }
+    return message;
+  }
+
+  private JsonObject statisticsMessage(Statistics statistics) {
+    JsonObject message = new JsonObject();
+    if (statistics != null) {
+      message.putNumber("accessed_at", statistics.accessTime.getTime());
+      message.putNumber("updated_at", statistics.updateTime.getTime());
+      message.putNumber("created_at", statistics.creationTime.getTime());
     }
     return message;
   }
