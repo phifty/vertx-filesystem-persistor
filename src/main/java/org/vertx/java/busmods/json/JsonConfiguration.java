@@ -2,6 +2,7 @@ package org.vertx.java.busmods.json;
 
 import org.vertx.java.busmods.Configuration;
 import org.vertx.java.busmods.DefaultConfiguration;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.HashMap;
@@ -28,6 +29,22 @@ public class JsonConfiguration implements Configuration {
   @Override
   public String getPath() {
     return object.getString("path", defaultConfiguration.getPath());
+  }
+
+  @Override
+  public int[] getPathSegmentLengths() {
+    JsonArray pathSegmentLengths = object.getArray("path_segment_lengths");
+
+    if (pathSegmentLengths == null) {
+      return defaultConfiguration.getPathSegmentLengths();
+    } else {
+      int[] result = new int[pathSegmentLengths.size()];
+      int index = 0;
+      for (Object pathSegmentLength : pathSegmentLengths) {
+        result[index++] = (Integer)pathSegmentLength;
+      }
+      return result;
+    }
   }
 
 }

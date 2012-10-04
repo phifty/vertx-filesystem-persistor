@@ -34,7 +34,7 @@ public class FilesystemPersistorModule extends Verticle {
   }
 
   private void initializeDatabase() {
-    database = new FilesystemDatabase(configuration.getPath(), new VertxFilesystem(vertx));
+    database = new FilesystemDatabase(configuration.getPath(), new VertxFilesystem(vertx), configuration.getPathSegmentLengths());
   }
 
   private void registerStoreHandler() {

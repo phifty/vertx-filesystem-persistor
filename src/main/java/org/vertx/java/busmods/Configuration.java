@@ -11,4 +11,6 @@ public interface Configuration {
 
   public String getPath();
 
+  public int[] getPathSegmentLengths();
+
 }

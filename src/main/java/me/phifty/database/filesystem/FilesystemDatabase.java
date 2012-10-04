@@ -3,7 +3,6 @@ package me.phifty.database.filesystem;
 import me.phifty.database.Database;
 import me.phifty.database.DatabaseException;
 import me.phifty.database.Handler;
-import sun.net.idn.StringPrep;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,6 +22,11 @@ public class FilesystemDatabase implements Database {
   public FilesystemDatabase(String path, Filesystem filesystem) {
     this.filesystem = filesystem;
     this.pathBuilder = new PathBuilder(path);
+  }
+
+  public FilesystemDatabase(String path, Filesystem filesystem, int[] pathSegmentLengths) {
+    this.filesystem = filesystem;
+    this.pathBuilder = new PathBuilder(path, pathSegmentLengths);
   }
 
   @Override

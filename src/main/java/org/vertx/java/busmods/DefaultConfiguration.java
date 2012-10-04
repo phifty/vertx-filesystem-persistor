@@ -19,4 +19,9 @@ public class DefaultConfiguration implements Configuration {
     return System.getProperty("user.home") + File.pathSeparator + "db";
   }
 
+  @Override
+  public int[] getPathSegmentLengths() {
+    return new int[] { 1, 1, 1 };
+  }
+
 }
