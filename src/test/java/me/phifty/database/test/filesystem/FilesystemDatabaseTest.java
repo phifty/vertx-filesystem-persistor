@@ -8,13 +8,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 /**
  * @author phifty <b.phifty@gmail.com>
  */
 public class FilesystemDatabaseTest {
 
-  private FakeDoneHandler doneHandler = new FakeDoneHandler();
-  private FakeDataHandler dataHandler = new FakeDataHandler();
+  private FakeHandler<String[]> idsHandler = new FakeHandler<String[]>();
+  private FakeHandler<Boolean> doneHandler = new FakeHandler<Boolean>();
+  private FakeHandler<byte[]> dataHandler = new FakeHandler<byte[]>();
   private FakeFilesystem filesystem;
   private Database database;
 
@@ -28,13 +31,25 @@ public class FilesystemDatabaseTest {
 
   @After
   public void tearDown() {
-    filesystem.reset();
+    idsHandler.reset();
     doneHandler.reset();
+    dataHandler.reset();
+    filesystem.reset();
+  }
+
+  @Test
+  public void testIds() {
+    filesystem.listedFiles.put("/tmp/test", new String[] { "/tmp/test/1/2/3/12345" });
+
+    database.ids(idsHandler);
+
+    Assert.assertArrayEquals(new String[] { "12345" }, idsHandler.getValue());
   }
 
   @Test
   public void testStore() throws DatabaseException {
     database.store("12345", testData(), doneHandler);
+
     Assert.assertEquals("/tmp/test/1/2/3/12345", filesystem.writtenFileName);
     Assert.assertArrayEquals(testData(), filesystem.writtenFileData);
   }
@@ -42,16 +57,20 @@ public class FilesystemDatabaseTest {
   @Test
   public void testPathCreationBeforeStore() throws DatabaseException {
     filesystem.exists = false;
+
     database.store("12345", testData(), doneHandler);
-    Assert.assertEquals("/tmp/test/1/2/3", filesystem.createdPath);
+
+    Assert.assertEquals(true, filesystem.createdPaths.contains("/tmp/test/1/2/3"));
   }
 
   @Test
   public void testFetch() throws DatabaseException {
     filesystem.writtenFileName = "/tmp/test/1/2/3/12345";
     filesystem.writtenFileData = testData();
+
     database.fetch("12345", dataHandler);
-    Assert.assertArrayEquals(testData(), dataHandler.getData());
+
+    Assert.assertArrayEquals(testData(), dataHandler.getValue());
   }
 
   @Test
@@ -59,21 +78,25 @@ public class FilesystemDatabaseTest {
     filesystem.writtenFileName = "/tmp/test/1/2/3/12345";
     filesystem.writtenFileData = testData();
     filesystem.exists = false;
+
     database.fetch("12345", dataHandler);
-    Assert.assertNull(dataHandler.getData());
+
+    Assert.assertNull(dataHandler.getValue());
   }
 
   @Test
   public void testRemove() throws DatabaseException {
     database.remove("12345", doneHandler);
+
     Assert.assertEquals(true, filesystem.deletedPaths.contains("/tmp/test/1/2/3/12345"));
   }
 
   @Test
   public void testRemoveOfEmptyDirectories() throws DatabaseException {
-    filesystem.emptyPaths.add("/tmp/test/1/2/3");
-    filesystem.emptyPaths.add("/tmp/test/1/2");
+    filesystem.listedFiles.put("/tmp/test/1", new String[] { "/tmp/test/1/1" });
+
     database.remove("12345", doneHandler);
+
     Assert.assertEquals(true, filesystem.deletedPaths.contains("/tmp/test/1/2/3"));
     Assert.assertEquals(true, filesystem.deletedPaths.contains("/tmp/test/1/2"));
     Assert.assertEquals(false, filesystem.deletedPaths.contains("/tmp/test/1"));

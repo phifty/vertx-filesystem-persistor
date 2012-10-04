@@ -2,8 +2,10 @@ package me.phifty.database.test.filesystem;
 
 import me.phifty.database.Handler;
 import me.phifty.database.filesystem.Filesystem;
+import me.phifty.database.filesystem.Properties;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author phifty <b.phifty@gmail.com>
@@ -11,8 +13,8 @@ import java.util.ArrayList;
 public class FakeFilesystem implements Filesystem {
 
   protected boolean exists;
-  protected ArrayList<String> emptyPaths = new ArrayList<String>();
-  protected String createdPath;
+  protected HashMap<String, String[]> listedFiles = new HashMap<String, String[]>();
+  protected ArrayList<String> createdPaths = new ArrayList<String>();
   protected ArrayList<String> deletedPaths = new ArrayList<String>();
   protected String writtenFileName;
   protected byte[] writtenFileData;
@@ -23,13 +25,22 @@ public class FakeFilesystem implements Filesystem {
   }
 
   @Override
-  public void empty(String path, Handler<Boolean> handler) {
-    handler.handle(emptyPaths.contains(path));
+  public void listFiles(String path, Handler<String[]> handler) {
+    if (listedFiles.containsKey(path)) {
+      handler.handle(listedFiles.get(path));
+    } else {
+      handler.handle(new String[0]);
+    }
+  }
+
+  @Override
+  public void properties(String path, Handler<Properties> handler) {
+
   }
 
   @Override
   public void makePath(String path, Handler<Boolean> handler) {
-    createdPath = path;
+    createdPaths.add(path);
     handler.handle(true);
   }
 
@@ -55,8 +66,8 @@ public class FakeFilesystem implements Filesystem {
 
   public void reset() {
     exists = false;
-    emptyPaths.clear();
-    createdPath = null;
+    listedFiles.clear();
+    createdPaths.clear();
     deletedPaths.clear();
     writtenFileName = null;
     writtenFileData = null;

@@ -5,6 +5,7 @@ import me.phifty.database.filesystem.FilesystemDatabase;
 import org.vertx.java.busmods.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.deploy.Verticle;
 
@@ -135,6 +136,16 @@ public class FilesystemPersistorModule extends Verticle {
         }
       }
     });
+  }
+
+  private JsonObject idsMessage(String[] ids) {
+    JsonObject message = new JsonObject();
+    JsonArray idsMessage = new JsonArray();
+    for (String id : ids) {
+      idsMessage.addString(id);
+    }
+    message.putArray("ids", idsMessage);
+    return message;
   }
 
   private JsonObject doneMessage(Boolean done) {

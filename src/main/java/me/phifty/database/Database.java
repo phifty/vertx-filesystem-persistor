@@ -5,6 +5,8 @@ package me.phifty.database;
  */
 public interface Database {
 
+  public void ids(Handler<String[]> handler);
+
   public void store(String id, byte[] data, Handler<Boolean> handler) throws DatabaseException;
 
   public void fetch(String id, Handler<byte[]> handler) throws DatabaseException;

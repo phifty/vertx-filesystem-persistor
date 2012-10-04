@@ -9,7 +9,9 @@ public interface Filesystem {
 
   public void exists(String path, Handler<Boolean> handler);
 
-  public void empty(String path, Handler<Boolean> handler);
+  public void listFiles(String path, Handler<String[]> handler);
+
+  public void properties(String path, Handler<Properties> handler);
 
   public void makePath(String path, Handler<Boolean> handler);
 

@@ -2,10 +2,15 @@ package org.vertx.java.busmods;
 
 import me.phifty.database.Handler;
 import me.phifty.database.filesystem.Filesystem;
+import me.phifty.database.filesystem.Properties;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.file.FileProps;
+
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author phifty <b.phifty@gmail.com>
@@ -33,17 +38,46 @@ public class VertxFilesystem implements Filesystem {
   }
 
   @Override
-  public void empty(String path, final Handler<Boolean> handler) {
+  public void listFiles(String path, final Handler<String[]> handler) {
     vertx.fileSystem().readDir(path, new AsyncResultHandler<String[]>() {
       @Override
       public void handle(AsyncResult<String[]> event) {
         if (event.exception == null) {
-          handler.handle(event.result.length == 0);
+          if (event.result.length == 0) {
+            handler.handle(new String[0]);
+          } else {
+            final CountDownLatch countDownLatch = new CountDownLatch(event.result.length);
+            final ArrayList<String> fileNames = new ArrayList<String>();
+
+            for (final String fileName : event.result) {
+              vertx.fileSystem().props(fileName, new AsyncResultHandler<FileProps>() {
+                @Override
+                public void handle(AsyncResult<FileProps> event) {
+                  if (event.exception == null) {
+                    countDownLatch.countDown();
+                    if (event.result.isRegularFile) {
+                      fileNames.add(fileName);
+                    }
+                    if (countDownLatch.getCount() == 0) {
+                      handler.handle(fileNames.toArray(new String[0]));
+                    }
+                  } else {
+                    handler.exception(event.exception);
+                  }
+                }
+              });
+            }
+          }
         } else {
           handler.exception(event.exception);
         }
       }
     });
+  }
+
+  @Override
+  public void properties(String path, Handler<Properties> handler) {
+
   }
 
   @Override

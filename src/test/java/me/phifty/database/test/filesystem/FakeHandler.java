@@ -5,13 +5,13 @@ import me.phifty.database.Handler;
 /**
  * @author phifty <b.phifty@gmail.com>
  */
-public class FakeDoneHandler implements Handler<Boolean> {
+public class FakeHandler<T> implements Handler<T> {
 
-  private boolean done;
+  private T value;
 
   @Override
-  public void handle(Boolean value) {
-    done = true;
+  public void handle(T value) {
+    this.value = value;
   }
 
   @Override
@@ -20,11 +20,11 @@ public class FakeDoneHandler implements Handler<Boolean> {
   }
 
   public void reset() {
-    done = false;
+    value = null;
   }
 
-  public boolean isDone() {
-    return done;
+  public T getValue() {
+    return value;
   }
 
 }
