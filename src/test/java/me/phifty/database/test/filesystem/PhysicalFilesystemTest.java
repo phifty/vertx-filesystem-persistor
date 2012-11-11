@@ -25,10 +25,12 @@ public class PhysicalFilesystemTest {
   private FakeHandler<byte[]> dataHandler = new FakeHandler<byte[]>();
 
   private Filesystem filesystem;
+  private String testContent = "test";
 
   @Before
   public void setUp() {
     filesystem = new PhysicalFilesystem();
+    for (int i = 0; i < 16; i++) testContent += testContent;
   }
 
   @After
@@ -90,9 +92,9 @@ public class PhysicalFilesystemTest {
   public void testWriteFile() throws IOException {
     new File("/tmp/test/1/2/3").mkdirs();
 
-    filesystem.writeFile("/tmp/test/1/2/3/12345", "test".getBytes(), booleanHandler);
+    filesystem.writeFile("/tmp/test/1/2/3/12345", testContent.getBytes(), booleanHandler);
 
-    Assert.assertEquals("test", readTestData());
+    Assert.assertEquals(testContent, readTestData());
   }
 
   @Test
@@ -101,11 +103,11 @@ public class PhysicalFilesystemTest {
 
     filesystem.readFile("/tmp/test/1/2/3/12345", dataHandler);
 
-    Assert.assertArrayEquals("test".getBytes(), dataHandler.getValue());
+    Assert.assertArrayEquals(testContent.getBytes(), dataHandler.getValue());
   }
 
   private void writeTestData() throws IOException {
-    writeTestData("test");
+    writeTestData(testContent);
   }
 
   private void writeTestData(String content) throws IOException {
@@ -117,7 +119,7 @@ public class PhysicalFilesystemTest {
   }
 
   private String readTestData() throws IOException {
-    char[] buffer = new char[4];
+    char[] buffer = new char[ testContent.length() ];
     FileReader fileReader = new FileReader("/tmp/test/1/2/3/12345");
     fileReader.read(buffer);
     fileReader.close();

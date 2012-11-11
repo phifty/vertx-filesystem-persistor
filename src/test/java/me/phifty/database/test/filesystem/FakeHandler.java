@@ -16,7 +16,7 @@ public class FakeHandler<T> implements Handler<T> {
 
   @Override
   public void exception(Exception exception) {
-    System.err.println(exception);
+    exception.printStackTrace();
   }
 
   public void reset() {

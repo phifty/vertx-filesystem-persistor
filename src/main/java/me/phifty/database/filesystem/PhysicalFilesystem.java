@@ -3,6 +3,7 @@ package me.phifty.database.filesystem;
 import me.phifty.database.Handler;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
@@ -77,21 +78,12 @@ public class PhysicalFilesystem implements Filesystem {
   @Override
   public void readFile(String name, Handler<byte[]> handler) {
     try {
-      FileInputStream fileInputStream = new FileInputStream(name);
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(fileInputStream.available());
-
-      byte[] buffer = new byte[ 1024 ];
-      int offset = 0;
-      int bytesRead;
-      while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-        byteArrayOutputStream.write(buffer, offset, bytesRead);
-        offset += bytesRead;
-      }
-
+      File file = new File(name);
+      FileInputStream fileInputStream = new FileInputStream(file);
+      byte[] buffer = new byte[ (int)file.length() ];
+      fileInputStream.read(buffer);
       fileInputStream.close();
-      byteArrayOutputStream.close();
-
-      handler.handle(byteArrayOutputStream.toByteArray());
+      handler.handle(buffer);
     } catch (Exception exception) {
       handler.exception(exception);
     }
