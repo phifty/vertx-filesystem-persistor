@@ -58,6 +58,7 @@ public class PhysicalFilesystem implements Filesystem {
   public void deletePath(String path, Handler<Boolean> handler) {
     try {
       deleteRecursive(new File(path));
+      handler.handle(true);
     } catch (Exception exception) {
       handler.exception(exception);
     }
@@ -70,6 +71,7 @@ public class PhysicalFilesystem implements Filesystem {
       fileOutputStream.write(data);
       fileOutputStream.flush();
       fileOutputStream.close();
+      handler.handle(true);
     } catch (Exception exception) {
       handler.exception(exception);
     }

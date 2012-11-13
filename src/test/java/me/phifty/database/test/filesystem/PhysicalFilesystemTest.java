@@ -48,7 +48,7 @@ public class PhysicalFilesystemTest {
 
     filesystem.exists("/tmp/test/1/2/3/12345", booleanHandler);
 
-    Assert.assertEquals(true, (boolean) booleanHandler.getValue());
+    Assert.assertTrue(booleanHandler.getValue());
   }
 
   @Test
@@ -76,6 +76,7 @@ public class PhysicalFilesystemTest {
   public void testMakePath() {
     filesystem.makePath("/tmp/test/1", booleanHandler);
 
+    Assert.assertTrue(booleanHandler.getValue());
     Assert.assertEquals(true, new File("/tmp/test/1").exists());
   }
 
@@ -85,6 +86,7 @@ public class PhysicalFilesystemTest {
 
     filesystem.deletePath("/tmp/test", booleanHandler);
 
+    Assert.assertTrue(booleanHandler.getValue());
     Assert.assertEquals(false, new File("/tmp/test").exists());
   }
 
@@ -94,6 +96,7 @@ public class PhysicalFilesystemTest {
 
     filesystem.writeFile("/tmp/test/1/2/3/12345", testContent.getBytes(), booleanHandler);
 
+    Assert.assertTrue(booleanHandler.getValue());
     Assert.assertEquals(testContent, readTestData());
   }
 
